@@ -1,6 +1,6 @@
 # What is this
 
-So we wrote a AWS lambda function to move a file, from one bucket to another using the *copy* service in the API. But one day we notice an error mainly because of the file was bigger than 5 GB (the max file size for a non multipart copy operation) but also do the fact that even if we used AWS CLI (boto/python) on the lambda function, the lamda invoke would expire as all lambda functions have a maximum (hard) timeout of 60 seconds... and sometimes moving a file 10GB - 20GB took more or about 60 seconds. 
+So we wrote a AWS lambda function to move a file, from one bucket to another using the *copy* service in the API. But one day we notice an error mainly because of the file was bigger than 5 GB (the max file size for a non multipart copy operation) but also do the fact that even if we used AWS CLI (boto/python) on the lambda function, the lambda invoke would expire as all lambda functions have a maximum (hard) timeout of 60 seconds... and sometimes moving a file 10GB - 20GB took more or about 60 seconds. 
 
 ```
 [luix@boxita copyMultipartS3]$ time aws s3 cp s3://sourcebucket/../.../...txt.gz s3://destbucket/../.../...txt.gz
@@ -13,7 +13,7 @@ sys	0m0.163s
 [luix@boxita copyMultipartS3]$
 ```
 
-I know that lambda functions are meant to execute small tasks, but I wanted to push the limits on the API and test if its possible to move big files within or less than 60 seconds with a lambda fucntion, so I've started and wrote my on program using AWS SDK for Node (because of its async nature) and go (surprise... concurrency!!!!). 
+I know that lambda functions are meant to execute small tasks, but I wanted to push the limits on the API and test if it's possible to move big files within or less than 60 seconds with a lambda function, so I've started and wrote my own program using AWS SDK for Node (because of it's async nature) and go (surprise... concurrency!!!!). 
 
 There were not big differences between go and node programs, both were faster than the CLI, chunk size may affect times, but for the ones we tested this was not a problem (this may  different with files of  several GB of size)
 
@@ -36,7 +36,7 @@ here are the programs install process and usage.
 
 ## AWS Credentials
 
-First of all you need to be sure to have your credentials installed properlly, if you are using the CLI, you probably already have them installed. 
+First of all you need to be sure to have your credentials installed properly, if you are using the CLI, you probably already have them installed. 
 
 http://docs.aws.amazon.com/AWSSdkDocsJava/latest//DeveloperGuide/credentials.html
 
@@ -44,7 +44,7 @@ http://docs.aws.amazon.com/AWSSdkDocsJava/latest//DeveloperGuide/credentials.htm
 
 If you want to edit the nodejs program, you can check the full SDK documentation [here](http://aws.amazon.com/sdk-for-node-js/)
 
-To install the nodejs program, as a **global** CLI too, you need to have nodejs and npm installed on your system, then after cloning this repo you can execute a **global install** of the prorgam.
+To install the nodejs program, as a **global** CLI too, you need to have nodejs and npm installed on your system, then after cloning this repo you can execute a **global install** of the program.
 
 ```
 [luix@boxita]$ sudo npm install -g
@@ -70,11 +70,11 @@ SUCCESS completeMultipartUpload
 [luix@boxita]$
 ```
 
-if you want to tweak the chunk size, there is a varible on line 17 of the index.js file where you can change this.
+if you want to tweak the chunk size, there is a variable on line 17 of the index.js file where you can change this.
 
 ## Go Install
 
-If you want to tweak or compile the program, you willneed to install go sdk for AWS
+If you want to tweak or compile the program, you will need to install go sdk for AWS
 
 ```
 http://aws.amazon.com/sdk-for-go/
@@ -101,3 +101,5 @@ SUCCESSS CopyPartResult 4 "842e05c0503b3a195e81934881f5685b"
 SUCCESS CompleteMultipartUpload
 [luix@boxita copyMultipartS3]$ 
 ```
+
+If you want to tweak the chunk size, the variable it's on line 53 of the go program.
