@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
+    "github.com/aws/aws-sdk-go/aws/session"
 	"math"
 	"os"
 	"strconv"
@@ -30,12 +31,14 @@ func copyPart(params *s3.UploadPartCopyInput, partNumber int, client *s3.S3, not
 		panic(err1)
 	}
 	fmt.Println("SUCCESSS CopyPartResult", partNumber, *respUploadPartCopy.CopyPartResult.ETag)
-	notify <- s3.CompletedPart{ETag: aws.String(*respUploadPartCopy.CopyPartResult.ETag), PartNumber: aws.Long(int64(partNumber))}
+	notify <- s3.CompletedPart{ETag: aws.String(*respUploadPartCopy.CopyPartResult.ETag), PartNumber: aws.Int64(int64(partNumber))}
 }
 
 func copy_object(sourceBucketName string, sourcePrefix string, destBucketName string, destPrefix string) {
-	aws.DefaultConfig.Region = "eu-west-1"
-	client := s3.New(nil)
+	sess, err := session.NewSession(&aws.Config{
+	    Region: aws.String("eu-west-1")},
+	)
+	client := s3.New(sess)
 	result, err := client.ListObjects(&s3.ListObjectsInput{Bucket: &sourceBucketName, Prefix: &sourcePrefix})
 	if err != nil {
 		fmt.Println("ERROR ListObjects", err)
@@ -63,7 +66,7 @@ func copy_object(sourceBucketName string, sourcePrefix string, destBucketName st
 		panic(err)
 	}
 
-	fmt.Println("uploadid", *resp.UploadID)
+	fmt.Println("uploadid", *resp.UploadId)
 
 	outputChan := make(chan s3.CompletedPart)
 
@@ -83,8 +86,8 @@ func copy_object(sourceBucketName string, sourcePrefix string, destBucketName st
 			CopySource:      aws.String(sourceBucketName + "/" + sourcePrefix),
 			CopySourceRange: aws.String(res),
 			Key:             aws.String(destPrefix),
-			PartNumber:      aws.Long(int64(i + 1)),
-			UploadID:        aws.String(*resp.UploadID),
+			PartNumber:      aws.Int64(int64(i + 1)),
+			UploadId:        aws.String(*resp.UploadId),
 		}
 
 		go copyPart(paramsUploadInput, i, client, outputChan)
@@ -115,13 +118,13 @@ func copy_object(sourceBucketName string, sourcePrefix string, destBucketName st
 	ord_parts := make([]*s3.CompletedPart, total_chunks+1)
 
 	for key := range unord_parts {
-		ord_parts[key] = &s3.CompletedPart{ETag: aws.String(unord_parts[key]), PartNumber: aws.Long(int64(key + 1))}
+		ord_parts[key] = &s3.CompletedPart{ETag: aws.String(unord_parts[key]), PartNumber: aws.Int64(int64(key + 1))}
 	}
 
 	paramsCompleteMultipartUploadInput := &s3.CompleteMultipartUploadInput{
 		Bucket:   aws.String(destBucketName),
 		Key:      aws.String(destPrefix),
-		UploadID: aws.String(*resp.UploadID),
+		UploadId: aws.String(*resp.UploadId),
 		MultipartUpload: &s3.CompletedMultipartUpload{
 			Parts: ord_parts,
 		},
