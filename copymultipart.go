@@ -113,6 +113,8 @@ func copy_object(chunkSize int64, sourceBucketName string, sourcePrefix string, 
 			unord_parts[*mensajito.PartNumber] = *mensajito.ETag
 		case <-timeout:
 			fmt.Println("Error, time out for copy time...")
+			panic("Error, time out for copy time...")
+
 		}
 	}
 
