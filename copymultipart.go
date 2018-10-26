@@ -97,7 +97,7 @@ func copy_object(chunkSize int64, sourceBucketName string, sourcePrefix string, 
 
 	timeout := make(chan bool, 1)
 	go func() {
-		time.Sleep(600 * time.Second)
+		time.Sleep(1200 * time.Second)
 		timeout <- true
 	}()
 
@@ -112,9 +112,7 @@ func copy_object(chunkSize int64, sourceBucketName string, sourcePrefix string, 
 			//fmt.Println(*mensajito.PartNumber, *mensajito.ETag, done_chunks, total_chunks)
 			unord_parts[*mensajito.PartNumber] = *mensajito.ETag
 		case <-timeout:
-			fmt.Println("Error, time out for copy time...")
-			panic("Error, time out for copy time...")
-
+			panic("Error, time out (20m) for copy time, try different chunksize...")
 		}
 	}
 
